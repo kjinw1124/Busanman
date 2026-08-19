@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="기상청 초단기예보를 지도와 차트로 확인하는 날씨 대시보드">
+  <title>초단기 날씨 브리핑</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="aurora aurora-one" aria-hidden="true"></div>
+  <div class="aurora aurora-two" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="초단기 날씨 브리핑 홈">
+      <span class="brand-icon">🌦️</span>
+      <span>Weather Brief</span>
+    </a>
+    <div class="header-actions">
+      <span id="sourceBadge" class="status-pill">연결 중</span>
+      <button id="refreshButton" class="refresh-button" type="button">
+        <span aria-hidden="true">↻</span> 새로고침
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">KMA NOWCAST</p>
+        <h1>가까운 시간의 날씨를<br><span>지도 위에서 한눈에.</span></h1>
+        <p class="hero-copy">기상청 초단기예보를 바탕으로 기온, 습도, 바람과 강수 변화를 정리합니다.</p>
+      </div>
+      <div class="location-control">
+        <label for="locationSelect">확인할 위치</label>
+        <select id="locationSelect">
+          <option value="울산대학교">울산대학교</option>
+          <option value="울산광역시 중심">울산광역시 중심</option>
+          <option value="서울광역시 중심">서울광역시 중심</option>
+          <option value="부산광역시 중심">부산광역시 중심</option>
+        </select>
+        <p id="gridCoordinates">격자 좌표를 불러오는 중입니다.</p>
+      </div>
+    </section>
+
+    <section class="weather-summary glass-panel" aria-live="polite">
+      <div class="current-condition">
+        <div id="weatherIcon" class="weather-icon">🌦️</div>
+        <div>
+          <p id="locationName" class="location-name">울산대학교</p>
+          <p id="conditionText" class="condition-text">날씨 데이터를 불러오는 중입니다.</p>
+        </div>
+      </div>
+      <div class="issued-at">
+        <span>발표 기준</span>
+        <strong id="baseTime">—</strong>
+        <small id="retrievedAt">—</small>
+      </div>
+    </section>
+
+    <section class="metric-grid" aria-label="현재 예보 요약">
+      <article class="metric-card">
+        <span>기온</span>
+        <strong id="temperature">—</strong>
+        <small id="temperatureDelta">다음 예보 —</small>
+      </article>
+      <article class="metric-card">
+        <span>습도</span>
+        <strong id="humidity">—</strong>
+        <small id="humidityDelta">다음 예보 —</small>
+      </article>
+      <article class="metric-card">
+        <span>풍속</span>
+        <strong id="windSpeed">—</strong>
+        <small id="windDelta">다음 예보 —</small>
+      </article>
+      <article class="metric-card">
+        <span>1시간 강수량</span>
+        <strong id="rainfall">—</strong>
+        <small id="precipitationType">강수 형태 —</small>
+      </article>
+    </section>
+
+    <section class="map-section glass-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LIVE LOCATION</p>
+          <h2>지도에서 보는 현재 예보</h2>
+        </div>
+        <p>마커를 누르면 상세 정보를 확인할 수 있습니다.</p>
+      </div>
+      <div id="weatherMap" role="application" aria-label="선택한 위치의 날씨 지도"></div>
+    </section>
+
+    <section class="charts-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">HOURLY TREND</p>
+          <h2>시간대별 변화</h2>
+        </div>
+        <p id="forecastRange">예보 범위를 불러오는 중입니다.</p>
+      </div>
+      <div class="chart-grid">
+        <article class="chart-card">
+          <h3>기온 <span>°C</span></h3>
+          <canvas id="temperatureChart"></canvas>
+        </article>
+        <article class="chart-card">
+          <h3>습도 <span>%</span></h3>
+          <canvas id="humidityChart"></canvas>
+        </article>
+        <article class="chart-card chart-wide">
+          <h3>풍속 <span>m/s</span></h3>
+          <canvas id="windChart"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <section class="table-section glass-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">FORECAST TABLE</p>
+          <h2>시간별 상세 예보</h2>
+        </div>
+        <button id="downloadButton" class="download-button" type="button">CSV 저장</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>예보 시각</th><th>기온</th><th>습도</th><th>풍속</th><th>강수량</th><th>하늘</th></tr>
+          </thead>
+          <tbody id="forecastTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="errorMessage" class="error-message" hidden></div>
+  </main>
+
+  <footer>
+    <span>자료 · 기상청 APIHub 초단기예보 조회서비스</span>
+    <span>5분 캐시 · KST</span>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

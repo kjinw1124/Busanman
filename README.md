@@ -2,6 +2,13 @@
 
 Notebook에서 확인한 기상청 초단기예보 응답을 Streamlit 화면으로 연결합니다. 자료는 실행 중 메모리에만 머물며, 사용자가 내려받기 버튼을 눌렀을 때 CSV 파일로 저장할 수 있습니다.
 
+이 저장소는 두 실행 방식을 지원합니다.
+
+- **Vercel 웹앱**: `index.html`, `app.js`, `styles.css`, `api/weather.js`
+- **로컬 Streamlit 앱**: `app.py`, `kma_client.py`
+
+Vercel 프로젝트에는 `KMA_AUTH_KEY` 환경 변수를 Production, Preview에 등록해야 실시간 API가 활성화됩니다. 환경 변수가 없거나 API가 일시적으로 응답하지 않으면 웹앱은 저장소의 샘플 데이터를 표시합니다.
+
 ## 1. 저장소 폴더로 이동
 
 ```bash
@@ -58,6 +65,9 @@ API 키가 아직 없는 경우에는 `샘플 데이터`를 선택해 화면과 
 
 ## 파일 구성
 
+- `index.html`, `app.js`, `styles.css`: Vercel용 정적 날씨 대시보드
+- `api/weather.js`: 인증키를 노출하지 않고 기상청 API를 호출하는 Vercel Function
+- `vercel.json`: 루트 페이지 및 함수 설정
 - `app.py`: 화면과 사용자 선택
 - `kma_client.py`: API 요청, 응답 확인, 표 변환
 - `.env`: 개인 API 키를 저장하는 로컬 파일
